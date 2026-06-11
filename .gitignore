@@ -1,0 +1,57 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+*.DS_Store
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Credentials & sensitive files
+*.key
+*.pem
+secrets/
+.secret
+*.secret
+*.credentials
+*.token
+
+# Environment (Stripe keys, never committed)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+
+# Engagement outputs (client-specific, not for version control)
+outputs/*-requirements.md
+outputs/*-context-validation.md
+outputs/implementation-briefs/*.md
+!outputs/implementation-briefs/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude Code (local settings, memory, session data)
+.claude/settings.local.json
