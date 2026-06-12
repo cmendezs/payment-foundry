@@ -2,7 +2,7 @@
 
 This is a guide for the questions the Engagement Manager should cover with the team's Compliance Officer and Data Protection Officer (DPO), typically after initial scoping (Step 3 of `/start-session`) but before the sequence moves into implementation. These questions are PSP-agnostic and apply to any engagement.
 
-It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., AML/KYC questions may be lighter for a low-volume B2B integration), and record answers in `outputs/<short-engagement-name>-compliance-officer-requirements.md`.
+It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., AML/KYC questions may be lighter for a low-volume B2B integration), and record answers in `outputs/<short-engagement-name>/compliance-officer-requirements.md`.
 
 Frame these as system configuration requests rather than abstract compliance questions. For example, instead of "Are we GDPR compliant?", ask "Which fields here are personal data, so the correct retention policy can be applied in the database?". This keeps the answers actionable for implementation.
 

@@ -2,7 +2,7 @@
 
 This is a guide for the questions the Engagement Manager should cover with the team's frontend development lead, typically after initial scoping (Step 3 of `/start-session`) but before the sequence moves into implementation. These questions are PSP-agnostic and apply to any engagement.
 
-It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement, and record answers in `outputs/<short-engagement-name>-frontend-developer-requirements.md`.
+It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement, and record answers in `outputs/<short-engagement-name>/frontend-developer-requirements.md`.
 
 Section I covers the "Day 0" architecture decisions, in particular the Hosted vs. Embedded choice. When discussing this choice, frame it in terms of journey ownership: hosted saves engineering effort but hands control of the experience to the PSP, while embedded costs more effort but preserves full control over look, feel, and flow.
 

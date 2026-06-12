@@ -12,12 +12,15 @@ Load only the file listed for the current action. Never load files speculatively
 
 | When | Load |
 |---|---|
-| Session start | `context/engagement-template.md` (once, for scoping) |
-| PSP confirmed | `psps/<psp>/README.md` only — the index, not the product files |
+| Session start | `context/business-info.md` (read, refresh in place, never copied per engagement) |
+| PSP confirmed | `psps/<psp>/README.md` only, the index, not the product files |
 | A product line becomes active | That product line's file only (e.g., `psps/stripe/payments.md`) |
-| A sub-agent is invoked | `sub-agents/<name>.md` + `outputs/<engagement>-<name>-requirements.md` — both loaded together, released after the review is complete |
+| A sub-agent is invoked | `sub-agents/<name>.md` + `outputs/<short-engagement-name>/requirements.md`, both loaded together, released after the review is complete |
+| `/wrap-up` is run | `context/go-live-checklist-template.md` (once, for the per-engagement checklist) |
 
 Once a topic is closed, do not re-read files already processed. Keep active context to the minimum needed for the current step.
+
+All per-engagement outputs go under `outputs/<short-engagement-name>/`. The three artifacts produced at `/wrap-up` are `implementation-brief.md` (executive layer), `implementation-detailed.md` (developer manual with code), and `go-live-checklist.md`. Company information lives in `context/business-info.md` and is maintained in place across engagements, never copied to `outputs/`. Stakeholder requirements files and the context validation output remain in `outputs/` at the engagement-name-prefixed paths used by their respective skills.
 
 ---
 
@@ -27,8 +30,8 @@ Full procedure: `.claude/skills/start-session/SKILL.md`. Run `/start-session`.
 
 Summary of what the skill does:
 1. Identifies the PSP and checks for support in `psps/`.
-2. Scopes the engagement using `context/engagement-template.md`.
-3. Captures stakeholder requirements conversationally (one role at a time), writing each to `outputs/<engagement>-<role>-requirements.md`.
+2. Refreshes `context/business-info.md` in place (the company's persistent profile) and captures per-engagement scope conversationally for the Implementation Brief.
+3. Captures stakeholder requirements conversationally (one role at a time), writing each to `outputs/<short-engagement-name>/<engagement>-<role>-requirements.md`.
 4. Proposes the engagement sequence for team confirmation.
 
 ---
@@ -38,7 +41,7 @@ Summary of what the skill does:
 Adapt to the product lines actually in scope. Load each product-line file at the start of the relevant step if not already loaded.
 
 1. Scope and constraints confirmed
-2. Context validation against authoritative sources, run `/validate-context`. Produces `outputs/<engagement>-context-validation.md` with `[Verified]`, `[Unverified]`, and `[Blocker]` items derived from each in-scope product-line file's "Verification References" block. Resolve blockers before proceeding.
+2. Context validation against authoritative sources, run `/validate-context`. Produces `outputs/<short-engagement-name>/context-validation.md` with `[Verified]`, `[Unverified]`, and `[Blocker]` items derived from each in-scope product-line file's "Verification References" block. Resolve blockers before proceeding.
 3. Core payments (e.g., Payment Intents + Payment Element)
 4. Webhook handling and order/payment state reconciliation
 5. Platform/marketplace flows, if in scope (e.g., Connect)
@@ -85,14 +88,19 @@ Full invocation procedure: `sub-agents/README.md`. Summary: load the sub-agent f
 - Write real, runnable code. No pseudocode.
 - Prefer examples from `psps/<psp-name>/` and adapt them to the team's stack.
 - If the team's language differs from the available examples, adapt the pattern faithfully and mark uncertain syntax `[Unverified]`.
+- Every time a runnable code block is presented to the team during steps 3 to 7 of the engagement sequence (core payments through issuing, including sub-agent design reviews that produce code), also append it to `outputs/<short-engagement-name>/implementation-detailed.md` under a heading naming the component, with a language-tagged fenced code block. Create the file on first append with a single H1 header naming the engagement. This file accumulates over the session and is finalized by `/wrap-up`.
 
 ---
 
-## Implementation Brief
+## Implementation Brief and Detailed Guide
 
 Full procedure: `.claude/skills/wrap-up/SKILL.md`. Run `/wrap-up`.
 
-The brief covers scope decisions, the implementation sequence, code examples, sub-agent outcomes, open requirements items with owners, and anything marked `[Unverified]`. It is saved to `outputs/implementation-briefs/<engagement>-brief.md`.
+The wrap-up produces three artifacts under `outputs/<short-engagement-name>/`:
+
+- `implementation-brief.md`: executive layer (sections 1 to 4). Executive summary, decisions log including sub-agent outcomes, action items for the next session, open and unverified items, requirements status per stakeholder.
+- `implementation-detailed.md`: developer manual (section 6). Project context, per-component runnable code in the team's stack, accumulated during the session and finalized at wrap-up.
+- `go-live-checklist.md`: per-engagement go-live checklist adapted from `context/go-live-checklist-template.md`.
 
 ---
 

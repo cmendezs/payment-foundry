@@ -2,7 +2,7 @@
 
 This is a guide for the questions the Engagement Manager should cover with the team's solution architect, typically after initial scoping (Step 3 of `/start-session`) but before the sequence moves into implementation. These questions are PSP-agnostic and apply to any engagement.
 
-It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., migration questions do not apply to a greenfield integration), and record answers in `outputs/<short-engagement-name>-solution-architect-requirements.md`.
+It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., migration questions do not apply to a greenfield integration), and record answers in `outputs/<short-engagement-name>/solution-architect-requirements.md`.
 
 These questions define the technical blueprint for the integration. Frame the conversation through a "fail-safe" lens: for each component, ask what the platform's degraded mode looks like if that component fails. For example, if the PSP's webhook service goes down, the goal is a platform that keeps functioning in a reduced state, not one that locks up. The aim is a resilient system, not just an integrated one.
 

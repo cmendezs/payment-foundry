@@ -20,18 +20,25 @@ Look for `psps/<psp-name>/README.md` (lowercase, kebab-case folder name, e.g., `
 - **If the folder and README exist:** read it. It indexes the available product-line files (Payments, Platform, Terminal, Issuing, etc.) for that PSP.
 - **If it does not exist:** tell the team plainly that this PSP is not yet supported. List which PSPs are available by checking `psps/` for existing folders with a `README.md`. Do not improvise guidance for the unsupported PSP. End the session here.
 
-## Step 3: Scope the engagement
+## Step 3: Refresh company information and scope the engagement
 
-Load `context/engagement-template.md`. Use it as a conversational guide, not a form to fill out. Cover:
+Load `context/business-info.md`. This is the source of truth for stable company information across all engagements, and it is updated in place, not copied per engagement.
 
-- Use case: what is being sold, to whom, how
-- Tech stack: backend language/framework, frontend framework, mobile if applicable
-- Markets and currencies
-- Target go-live date
-- Current state: greenfield or migrating from another PSP/setup
-- Product lines likely in scope: use the PSP README to know what is available
+Walk through it in two passes:
 
-Record a short engagement name (kebab-case, e.g., `acme-payments`) for use in all output filenames.
+1. **Confirm what is already captured.** For each filled-in field, ask the team whether it is still accurate, particularly entries that change over time (contacts, PSPs in use, markets, volumes, team leads). Update any line that has changed using Edit on `context/business-info.md`.
+2. **Fill in gaps.** For each line still marked `[Not yet captured]`, ask the relevant question. Update the line with the answer once given. If the team cannot answer right now, leave it as `[Not yet captured]` and note it for a later session, do not invent a value.
+
+Then capture the **per-engagement** scope conversationally (this is not written to `business-info.md`, it will land in the Implementation Brief at `/wrap-up`):
+
+- Channels, markets, and payment methods in scope for this specific engagement
+- Target go-live date and any hard external deadlines
+- Phased rollout vs all at once, and the sequencing if phased
+- Greenfield vs migrating from another PSP for this scope
+- Internal team allocated to this engagement
+- Product lines in scope: use the PSP README to know what is available
+
+Record a short engagement name (kebab-case, e.g., `acme-payments`) for use in all output paths. Create `outputs/<engagement>/` if it does not yet exist.
 
 ## Step 4: Capture stakeholder requirements
 

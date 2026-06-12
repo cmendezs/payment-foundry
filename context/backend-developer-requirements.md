@@ -2,7 +2,7 @@
 
 This is a guide for the questions the Engagement Manager should cover with the team's backend development lead, typically after initial scoping (Step 3 of `/start-session`) but before the sequence moves into implementation. These questions are PSP-agnostic and apply to any engagement.
 
-It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., migration questions do not apply to a greenfield integration), and record answers in `outputs/<short-engagement-name>-backend-developer-requirements.md`.
+It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., migration questions do not apply to a greenfield integration), and record answers in `outputs/<short-engagement-name>/backend-developer-requirements.md`.
 
 Frame these as system constraints rather than open design questions. For example, instead of "How do we handle retries?", ask "Our reliability requirement is 99.99% uptime. To achieve this, how are we architecting our retry logic and circuit breakers to handle the new PSP's API without creating duplicate charges?"
 

@@ -202,7 +202,7 @@ Use `expand` for data needed immediately (e.g., to render a confirmation page); 
 
 ## Support Model
 
-Enterprise Stripe accounts typically include a dedicated Technical Account Manager, a dedicated support channel/alias, and incident-response SLAs (e.g., a fast-track channel for "all charges failing" type incidents). The specifics (response times, escalation paths, eligible incident types) vary by contract. Confirm the team's actual support tier and escalation process with their Stripe account team rather than assuming a default, and document it as part of the Implementation Brief's go-live readiness section (see `context/engagement-template.md`).
+Enterprise Stripe accounts typically include a dedicated Technical Account Manager, a dedicated support channel/alias, and incident-response SLAs (e.g., a fast-track channel for "all charges failing" type incidents). The specifics (response times, escalation paths, eligible incident types) vary by contract. Confirm the team's actual support tier and escalation process with their Stripe account team rather than assuming a default, and document it in the per-engagement go-live checklist (see `context/go-live-checklist-template.md`).
 
 ## Relevant Stripe Documentation
 
@@ -221,4 +221,4 @@ Enterprise Stripe accounts typically include a dedicated Technical Account Manag
 - IP addresses: https://stripe.com/docs/ips
 - API keys: https://stripe.com/docs/keys#safe-keys
 - Subscriptions and billing testing (Test Clocks): see `psps/stripe/billing.md`
-- Go-live readiness checklist: see `context/engagement-template.md`
+- Go-live readiness checklist: see `context/go-live-checklist-template.md`

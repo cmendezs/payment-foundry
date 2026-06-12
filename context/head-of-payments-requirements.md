@@ -2,7 +2,7 @@
 
 This is a guide for the questions the Engagement Manager should cover with the team's payments leadership (Head of Payments, Payments Lead, or equivalent), typically after initial scoping (Step 3 of `/start-session`) but before the sequence moves into implementation. These questions are PSP-agnostic and apply to any engagement.
 
-It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., migration questions do not apply to a greenfield integration), and record answers in `outputs/<short-engagement-name>-head-of-payments-requirements.md`.
+It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., migration questions do not apply to a greenfield integration), and record answers in `outputs/<short-engagement-name>/head-of-payments-requirements.md`.
 
 During the review stage and at Implementation Brief time, the `head-of-payments` sub-agent checks the integration plan and decisions against the answers recorded here.
 

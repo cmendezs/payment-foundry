@@ -2,7 +2,7 @@
 
 This is a guide for the questions the Engagement Manager should cover with the team's Fraud Officer (or equivalent risk/operations owner), typically after initial scoping (Step 3 of `/start-session`) but before the sequence moves into implementation. These questions are PSP-agnostic and apply to any engagement.
 
-It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., dispute automation questions may be lighter for a low-volume B2B integration), and record answers in `outputs/<short-engagement-name>-fraud-officer-requirements.md`.
+It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., dispute automation questions may be lighter for a low-volume B2B integration), and record answers in `outputs/<short-engagement-name>/fraud-officer-requirements.md`.
 
 Frame these as system configuration requests rather than abstract risk questions. For example, instead of "Can the PSP do velocity checks?", ask "To configure velocity rules, what are the thresholds (attempts per card, IP, or device, per time window) the team wants enforced?". This keeps the answers actionable for implementation.
 

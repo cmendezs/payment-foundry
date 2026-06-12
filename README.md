@@ -45,7 +45,7 @@ One session. Eight perspectives. One Implementation Brief your engineers can exe
   Specialist Reviews (approve / flag / block)
       |
       v
-/wrap-up  ->  Implementation Brief (outputs/implementation-briefs/)
+/wrap-up  ->  Brief + Detailed Guide + Go-Live Checklist (outputs/<engagement>/)
 ```
 
 ---
@@ -111,7 +111,7 @@ Three commands cover the full engagement lifecycle.
 |---|---|---|
 | `/start-session` | Beginning of every engagement | Identifies the PSP, scopes the engagement, captures stakeholder requirements one role at a time, and proposes the implementation sequence |
 | `/validate-context` | After `/start-session`, before implementation begins | Checks the PSP-specific facts in scope (status, pricing, capability gating, header strings, API versions) against the PSP's authoritative sources, and records what is verified, unverified, or blocked |
-| `/wrap-up` | End of the engagement | Collects open items across all stakeholder requirements files, documents sub-agent outcomes, and produces the Implementation Brief |
+| `/wrap-up` | End of the engagement | Collects open items, documents sub-agent outcomes, and produces three artifacts under `outputs/<engagement>/`: an executive Implementation Brief, a code-heavy Detailed Implementation Guide, and a Go-Live Readiness Checklist |
 
 Everything between `/start-session` and `/wrap-up` is handled conversationally by the Engagement Manager: implementation guidance, code examples, and specialist reviews as decisions arise.
 
@@ -130,7 +130,7 @@ A typical engagement moves through these stages in order:
 7. **In-person flows** (if applicable) - Terminal, reader management
 8. **Card issuing** (if applicable) - Issued cards, spend controls, authorizations
 9. **Specialist reviews** - Each sub-agent loads its requirements file, reviews the relevant decisions, and outputs approve / flag / block with reasoning
-10. **Implementation Brief** - Full written summary of decisions, code, open items, and unverified points
+10. **Engagement Artifacts** - Executive Implementation Brief, code-heavy Detailed Implementation Guide, and per-engagement Go-Live Readiness Checklist
 
 The Engagement Manager proposes this sequence at the start and adapts it to what is actually in scope for your team.
 
@@ -196,7 +196,8 @@ payment-foundry/
 │       └── issuing.md
 │
 ├── context/                         # Scoping and requirements templates
-│   ├── engagement-template.md
+│   ├── business-info.md              # /start-session scoping guide
+│   ├── go-live-checklist-template.md # Source template for go-live checklist
 │   ├── head-of-payments-requirements.md
 │   ├── compliance-officer-requirements.md
 │   ├── fraud-officer-requirements.md
@@ -207,9 +208,15 @@ payment-foundry/
 │   └── finance-treasury-requirements.md
 │
 └── outputs/
-    ├── <engagement>-*-requirements.md   # Captured per session, per role
-    └── implementation-briefs/           # One brief per completed engagement
+    ├── <engagement>-*-requirements.md      # Captured per session, per role
+    ├── <engagement>-context-validation.md  # Produced by /validate-context
+    └── <engagement>/                       # Per-engagement folder, produced by /wrap-up
+        ├── implementation-brief.md         # Executive layer
+        ├── implementation-detailed.md      # Developer manual with code
+        └── go-live-checklist.md            # Adapted from the template
 ```
+
+Company information lives in `context/business-info.md` and is updated in place across engagements, never copied per engagement.
 
 ---
 

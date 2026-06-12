@@ -54,7 +54,7 @@ For each volatile item listed in the Verification References blocks, attempt ver
 
 ## Step 4: Produce the validation output
 
-Write `outputs/<engagement>-context-validation.md` with this structure:
+Write `outputs/<short-engagement-name>/context-validation.md` with this structure:
 
 ```markdown
 # Context Validation, <engagement>

@@ -2,7 +2,7 @@
 
 This is a guide for the questions the Engagement Manager should cover with the team's Finance and Treasury leadership, typically after initial scoping (Step 3 of `/start-session`) but before the sequence moves into implementation. These questions are PSP-agnostic and apply to any engagement.
 
-It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., marketplace payout questions do not apply to a non-Connect integration), and record answers in `outputs/<short-engagement-name>-finance-treasury-requirements.md`.
+It is not mandatory to answer all questions. Partial answers are useful and can be revisited later. Ask conversationally, skip anything not relevant to this engagement (e.g., marketplace payout questions do not apply to a non-Connect integration), and record answers in `outputs/<short-engagement-name>/finance-treasury-requirements.md`.
 
 Frame the fee reconciliation conversation as a data fidelity problem rather than a billing dispute. Instead of asking whether the bill can be reconciled, describe the Data Warehouse ETL pipeline being built and ask what raw, transaction-level data is required from Day 1 to match the invoice and automate month-end close.
 

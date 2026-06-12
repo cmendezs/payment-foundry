@@ -14,16 +14,21 @@ Go through this before running `/start-session` for a new engagement. This is a 
 
 ## Context to have ready
 
-The EM will ask all of these conversationally during `/start-session`. Having answers ready speeds things up.
+The EM will ask all of these conversationally during your first `/start-session`, populating `context/business-info.md`. On subsequent sessions the EM only confirms what has changed and fills in any items still marked `[Not yet captured]`. Having answers ready for the first session speeds things up.
 
-- [ ] One-sentence description of the use case: what is being sold, to whom, how
-- [ ] Tech stack: backend language/framework, frontend framework, mobile if applicable
-- [ ] Markets and currencies you need to support
-- [ ] Target go-live date
-- [ ] Current state: greenfield integration, or migrating from another PSP/setup
-- [ ] Which product lines are likely in scope: Payments, Platform (Connect), Terminal, Issuing, or a combination
+- [ ] Company overview: name, industry, size, primary contact
+- [ ] Business model and sales channels: which channels are in scope, transaction types (one-time, deposits, subscriptions, refunds, etc.)
+- [ ] Use case detail: what is being sold, customer type (consumer/business), one-time vs recurring, marketplace element
+- [ ] Current payment setup: existing PSP(s), monthly volume, payment methods accepted today, data migration needs
+- [ ] Volume and geography: countries in scope, currencies, settlement currency, legal entity location, multi-market structure (one account vs many)
+- [ ] Technical environment: backend language/framework, frontend stack, mobile if applicable, cloud provider, PCI-DSS status, regulatory constraints
+- [ ] Target PSP: selected, shortlist, or evaluating, plus top selection criteria
+- [ ] Payment methods target state: methods to accept after implementation, with target countries and priority
+- [ ] Product lines in scope: Payments, Platform (Connect), Terminal, Issuing, or a combination
+- [ ] Team and stakeholders: who owns compliance, infrastructure, frontend, fraud/risk, finance
+- [ ] Project context: planned go-live date, hard deadlines, phased rollout vs all at once, internal team availability
 
-See `context/engagement-template.md` if you want to prepare answers in advance.
+See `context/business-info.md` if you want to prepare answers in advance.
 
 ---
 
