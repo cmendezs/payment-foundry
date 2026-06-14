@@ -13,6 +13,20 @@ When a meaningful change is made to the engagement framework:
 
 ---
 
+## 2026-06-14
+
+### v0.2.0 — Multi-platform agent support
+
+- Skills moved to `skills/payment-foundry/<skill>/SKILL.md`, the new single source of truth for `/start-session`, `/validate-context`, and `/wrap-up`.
+- `scripts/setup-agents.sh` added: distributes `skills/payment-foundry/` into `.claude/skills/` (Claude Code), `.agents/skills/payment-foundry/` (Google Antigravity / AWS Kiro), and `.vibe/agents/payment-foundry.toml` (Mistral Vibe).
+- `setup/installation-guide.md` updated with a new "Bootstrap AI Agent Frameworks" step running the setup script.
+- `setup/other-agents.md` rewritten to document the shared-source architecture and per-tool notes for Antigravity, Kiro, and Vibe.
+- `README.md` updated to present payment-foundry as usable from Claude Code, Google Antigravity, AWS Kiro, and Mistral Vibe.
+
+Tagged `v0.2.0`.
+
+---
+
 ## 2026-06-12
 
 ### v0.1.0 — Initial engagement framework
@@ -40,5 +54,7 @@ Tagged `v0.1.0` on `f733045`.
 ---
 
 ## GitHub release status
+
+`v0.2.0` tagged (2026-06-14) and pushed to `https://github.com/cmendezs/payment-foundry`.
 
 `v0.1.0` tagged on `f733045` (2026-06-14) and pushed to `https://github.com/cmendezs/payment-foundry`.

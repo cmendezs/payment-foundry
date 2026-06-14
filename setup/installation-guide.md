@@ -23,7 +23,16 @@ cp .env.example .env
 
 Fill in `.env` with your Stripe test mode keys. See `setup/environment-keys.md` for where to find them. `.env` is gitignored and never committed.
 
-## 4. Launch Claude Code
+## 4. Bootstrap AI Agent Frameworks
+
+```bash
+chmod +x scripts/setup-agents.sh
+./scripts/setup-agents.sh
+```
+
+This distributes the skills in `skills/payment-foundry/` (the source of truth for `/start-session`, `/validate-context`, and `/wrap-up`) into `.claude/skills/`, `.agents/skills/`, and `.vibe/agents/`, the locations expected by Claude Code, Google Antigravity / AWS Kiro, and Mistral Vibe respectively. Re-run it any time a skill file changes. See `setup/other-agents.md` for per-tool details.
+
+## 5. Launch Claude Code
 
 ```bash
 claude
@@ -31,7 +40,7 @@ claude
 
 Claude Code reads `CLAUDE.md` automatically and loads the Engagement Manager persona.
 
-## 5. (Optional) Connect MCPs
+## 6. (Optional) Connect MCPs
 
 payment-foundry works fully from local files, no MCP is required. If you want Claude to query Stripe data directly during a session (e.g., look up an account, a payment intent, recent webhook events), you can connect the Stripe MCP server:
 
@@ -63,7 +72,7 @@ Add the following to your `claude_desktop_config.json`. For more details, see th
 }
 ```
 
-## 6. Run the first session checklist
+## 7. Run the first session checklist
 
 Go through `setup/first-session-checklist.md`, then run:
 
