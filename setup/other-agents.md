@@ -1,31 +1,61 @@
 # Using payment-foundry With Other Agent Tools
 
-payment-foundry is built and tested for **Claude Code**, which reads `CLAUDE.md` automatically. This file covers what to do if you want to use the workspace with other AI coding tools.
+payment-foundry is built and tested for **Claude Code**, which reads `CLAUDE.md` automatically. It is also designed to work with **Google Antigravity**, **AWS Kiro**, and **Mistral Vibe**. This file covers the shared architecture behind that support and what to do for each tool.
+
+## Architecture: one source of truth, distributed per tool
+
+The `/start-session`, `/validate-context`, and `/wrap-up` skills live in a single canonical location: `skills/payment-foundry/<skill>/SKILL.md`. Each tool expects skills in its own location, so `scripts/setup-agents.sh` copies (or generates) a per-tool version from that source:
+
+| Tool | Skill location | Produced by |
+|---|---|---|
+| Claude Code | `.claude/skills/<skill>/SKILL.md` | `scripts/setup-agents.sh` |
+| Google Antigravity / AWS Kiro | `.agents/skills/payment-foundry/<skill>/SKILL.md` | `scripts/setup-agents.sh` |
+| Mistral Vibe | `.vibe/agents/payment-foundry.toml` (references `skills/payment-foundry/`) | `scripts/setup-agents.sh` |
+
+If you edit a skill, edit it under `skills/payment-foundry/`, then run:
+
+```bash
+./scripts/setup-agents.sh
+```
+
+This keeps every tool's copy in sync and avoids prompt drift between hidden per-tool directories. `CLAUDE.md` itself is not duplicated by this script, every tool reads it (directly, or via `AGENTS.md`) from the project root, see below.
 
 ## Tools that read `AGENTS.md`
 
-Some tools (e.g., OpenAI Codex CLI, and others adopting the emerging `AGENTS.md` convention) look for `AGENTS.md` at the project root. This project includes a minimal `AGENTS.md` that points to `CLAUDE.md`. If your tool follows file references automatically, no extra setup is needed.
+Mistral Vibe, AWS Kiro, OpenAI Codex CLI, and other tools adopting the emerging `AGENTS.md` convention look for `AGENTS.md` at the project root. This project includes a minimal `AGENTS.md` that points to `CLAUDE.md`. If your tool follows file references automatically, no extra setup is needed.
 
 If your tool reads `AGENTS.md` but does **not** follow references to other files, copy the contents of `CLAUDE.md` into `AGENTS.md` directly (or replace `AGENTS.md` with a copy of `CLAUDE.md`). Keep `sub-agents/` and `psps/` paths unchanged, since `CLAUDE.md` references them by relative path.
 
-## Google Antigravity, AWS Kiro, and similar
+## Google Antigravity
 
-[Unverified] These tools may look for their own convention files (for example, a tool-specific instructions file in a `.<tool>/` directory) rather than `CLAUDE.md` or `AGENTS.md`. Check the tool's documentation for the exact filename and location it expects.
+Antigravity scans the workspace for Agent Skills and reads each skill's YAML frontmatter to decide when to load it, rather than relying on one global instructions file. `scripts/setup-agents.sh` places a copy of each skill at `.agents/skills/payment-foundry/<skill>/SKILL.md`, with the same frontmatter (`name`, `description`, `disable-model-invocation`, `user-invocable`) used by the Claude Code copy.
 
-In general:
+[Unverified] Which of these frontmatter fields Antigravity actually reads, and whether it expects additional fields, is not confirmed here. Check Antigravity's own documentation for its Agent Skills format. The `name` and `description` fields are the ones most likely to matter for skill discovery.
 
-1. Create the file/location your tool expects.
-2. Either symlink it to `CLAUDE.md`, or copy `CLAUDE.md`'s contents into it.
-3. Confirm the tool can read project files outside that instructions file (it needs access to `sub-agents/`, `psps/`, `context/`, and write access to `outputs/`).
+For the Engagement Manager persona and routing rules (`CLAUDE.md`), Antigravity should pick up `AGENTS.md` at the project root per the "Tools that read AGENTS.md" section above. [Unverified] Confirm against Antigravity's documentation whether it reads `AGENTS.md` automatically or expects a tool-specific instructions file; if the latter, follow the symlink/copy approach in the "Sub-agents on tools without a sub-agent mechanism" section below, applied to whatever file Antigravity expects.
+
+## AWS Kiro
+
+Kiro follows the `AGENTS.md` convention for project-wide instructions, see "Tools that read `AGENTS.md`" above, no extra setup needed for the Engagement Manager persona itself.
+
+[Unverified] Whether Kiro also scans a `.agents/skills/`-style directory the way Antigravity does is not confirmed here. If it does, the same `.agents/skills/payment-foundry/<skill>/SKILL.md` copies produced by `scripts/setup-agents.sh` apply. Check Kiro's own documentation for its exact skill-discovery convention and location.
+
+## Mistral Vibe
+
+Vibe reads `AGENTS.md` at the project root for project-wide conventions, see "Tools that read `AGENTS.md`" above, this is the primary integration point and needs no extra setup.
+
+Optionally, `scripts/setup-agents.sh` also generates `.vibe/agents/payment-foundry.toml`, a subagent profile listing the three skills (name, description, and path into `skills/payment-foundry/`). This is intended to let the team delegate background work, such as a test-suite run or a log audit, via `task(task="...", agent="payment-foundry")` without consuming the primary context window.
+
+[Unverified] The exact TOML schema Vibe expects for subagent profiles is not confirmed here. The generated file is a best-effort starting point, check it against Vibe's own subagent configuration documentation and adjust field names if Vibe expects something different. The file is regenerated by `scripts/setup-agents.sh`, so re-run that script after correcting the schema rather than hand-editing repeatedly.
 
 ## VS Code (Copilot / Claude extension)
 
-The Claude Code extension for VS Code uses the same `CLAUDE.md` convention as the CLI, no changes needed. For GitHub Copilot, place repo-wide instructions in `.github/copilot-instructions.md`; you can point that file at `CLAUDE.md` the same way `AGENTS.md` does.
+The Claude Code extension for VS Code uses the same `CLAUDE.md` convention as the CLI, no changes needed. For GitHub Copilot, place repo-wide instructions in `.github/copilot-instructions.md`, you can point that file at `CLAUDE.md` the same way `AGENTS.md` does.
 
 ## Sub-agents on tools without a sub-agent mechanism
 
-The EM in `CLAUDE.md` invokes sub-agents by reading their persona files from `sub-agents/` and adopting that perspective for a review, it does not require a special "sub-agent" feature in the tool. Any tool that can read project files and follow instructions in `CLAUDE.md` can run this workflow, even if it has no native multi-agent support.
+The EM in `CLAUDE.md` invokes sub-agents by reading their persona files from `sub-agents/` and adopting that perspective for a review, it does not require a special "sub-agent" feature in the tool. Any tool that can read project files and follow instructions in `CLAUDE.md` (directly or via `AGENTS.md`) can run this workflow, even if it has no native multi-agent support.
 
 ## Keeping things in sync
 
-If you maintain a tool-specific copy of `CLAUDE.md` (rather than a pointer), remember to keep it in sync manually when `CLAUDE.md` changes. Prefer the pointer approach (`AGENTS.md` -> `CLAUDE.md`, or a symlink) wherever the tool supports it.
+Edit skills under `skills/payment-foundry/`, then re-run `./scripts/setup-agents.sh` to refresh `.claude/skills/`, `.agents/skills/`, and `.vibe/agents/payment-foundry.toml`. For `CLAUDE.md` itself, if a tool requires its own copy rather than reading `CLAUDE.md` or `AGENTS.md` directly, prefer a symlink or pointer file (as `AGENTS.md` already is) over a hand-maintained copy, so changes to `CLAUDE.md` do not need to be repeated per tool.
