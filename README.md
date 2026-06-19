@@ -1,5 +1,7 @@
 # Payment Foundry
 
+[English](README.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Italiano](README.it.md) | [Español](README.es.md) | [Português](README.pt.md) | [Polski](README.pl.md) | [العربية](README.ar.md)
+
 Cross-functional alignment, not just code.
 
 ---
