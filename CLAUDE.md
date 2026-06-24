@@ -42,13 +42,19 @@ Adapt to the product lines actually in scope. Load each product-line file at the
 
 1. Scope and constraints confirmed
 2. Context validation against authoritative sources, run `/validate-context`. Produces `outputs/<short-engagement-name>/context-validation.md` with `[Verified]`, `[Unverified]`, and `[Blocker]` items derived from each in-scope product-line file's "Verification References" block. Resolve blockers before proceeding.
-3. Core payments (e.g., Payment Intents + Payment Element)
+3. Core payments (e.g., Payment Intents + Payment Element, or Payment Links where a Stripe-hosted checkout is the right fit)
 4. Webhook handling and order/payment state reconciliation
-5. Platform/marketplace flows, if in scope (e.g., Connect)
-6. In-person/point-of-sale flows, if in scope (e.g., Terminal)
-7. Card issuing flows, if in scope (e.g., Issuing)
-8. Specialist reviews at key decision points, each sub-agent loads its requirements file and the validation output, reviews, outputs, then releases context
-9. Implementation Brief, run `/wrap-up`
+5. Products and Prices catalog (load `psps/<psp>/products-and-prices.md`), if Billing or Tax is in scope. Settle the catalog model before either consumer is implemented.
+6. Tax (calculation, registrations, reporting), if in scope. Depends on the catalog from step 5.
+7. Platform/marketplace flows, if in scope (e.g., Connect)
+8. Capital (financing offered by the platform to its connected accounts), if in scope. Depends on step 7.
+9. In-person/point-of-sale flows, if in scope (e.g., Terminal)
+10. Card issuing flows, if in scope (e.g., Issuing)
+11. Treasury (financial accounts, money movement), if in scope. Depends on step 7 and typically pairs with step 10 (Treasury as Issuing funding source).
+12. Stablecoin extensions, if in scope. Cross-cuts step 3 (acceptance via Optimized Checkout), step 5 to 6 (recurring via Billing if in scope), step 10 (Issuing card spend from stablecoin balance), and step 11 (Treasury stablecoin balances). Load `psps/<psp>/stablecoins.md` and revisit each in-scope consumer file's stablecoin subsection. Outside counsel review is the bar for stablecoin work, not an option.
+13. Crypto Onramp, if in scope. Standalone product line for letting end users buy crypto in-product with Stripe as merchant of record. No upstream dependencies on other Stripe product lines; custom-stablecoin delivery cross-references step 12.
+14. Specialist reviews at key decision points, each sub-agent loads its requirements file and the validation output, reviews, outputs, then releases context
+15. Implementation Brief, run `/wrap-up`
 
 ---
 
@@ -80,6 +86,20 @@ Full invocation procedure: `sub-agents/README.md`. Summary: load the sub-agent f
 | Idempotency, webhook processing, retries, reconciliation, refunds/disputes, data model | `backend-developer` |
 | Settlement, multi-currency, payouts/fees, refunds, reporting, tax | `finance-treasury` |
 | Risk rule design, 3DS enforcement strategy, manual review handling, dispute/chargeback process | `fraud-officer` |
+| Payment Links vs. custom checkout, conversion vs. control trade-off | `solution-architect`, `frontend-developer`, `head-of-payments` |
+| Catalog design: Product/Price shape, multi-currency Prices, `tax_code` and `tax_behavior` choices | `backend-developer`, `finance-treasury` |
+| Tax nexus, registration thresholds, marketplace facilitator rules, MOSS/OSS | `compliance-officer`, `finance-treasury`, `head-of-payments` |
+| Tax calculation path on PaymentIntent vs. Invoice vs. Checkout, exemption certificates, Customer Tax IDs | `backend-developer`, `finance-treasury` |
+| Radar for Fraud Teams custom-list lifecycle, advanced rule strategy | `fraud-officer`, `security-officer`, `compliance-officer` |
+| Capital offer presentation, disclosures, repayment routing via Connect, combined cash-flow impact | `compliance-officer`, `finance-treasury`, `head-of-payments`, `frontend-developer` |
+| Treasury financial-account design, FBO/sponsor-bank model, liquidity, ACH return handling, ledger pending-vs.-final | `head-of-payments`, `compliance-officer`, `finance-treasury`, `solution-architect`, `backend-developer` |
+| Outbound money movement (OutboundPayments vs. OutboundTransfers), settlement timing, idempotency | `finance-treasury`, `backend-developer` |
+| Stablecoin acceptance via Optimized Checkout: settlement mode (fiat vs. stablecoin), refund/dispute substitutes, support process | `head-of-payments`, `frontend-developer`, `finance-treasury` |
+| Stablecoin Treasury balances, fiat-to-stablecoin conversion, dual-currency ledger design | `finance-treasury`, `head-of-payments`, `backend-developer`, `compliance-officer` |
+| Open Issuance via Bridge: launching a branded stablecoin, reserve model, ongoing regulatory and operational obligations | `head-of-payments`, `compliance-officer`, `finance-treasury` |
+| Stablecoin outbound on-chain transfers: sanctions screening, Travel Rule, wallet allowlisting, unrecoverable-typo mitigation | `compliance-officer`, `security-officer`, `finance-treasury` |
+| Crypto Onramp integration mode (no-code vs. embeddable vs. headless preview), KYC sharing | `solution-architect`, `frontend-developer`, `compliance-officer` |
+| Crypto Onramp customer journey: fee/conversion display, decline handling, KYC mode selection, wallet-ownership defensibility | `frontend-developer`, `head-of-payments`, `finance-treasury`, `compliance-officer` |
 
 ---
 
@@ -88,7 +108,7 @@ Full invocation procedure: `sub-agents/README.md`. Summary: load the sub-agent f
 - Write real, runnable code. No pseudocode.
 - Prefer examples from `psps/<psp-name>/` and adapt them to the team's stack.
 - If the team's language differs from the available examples, adapt the pattern faithfully and mark uncertain syntax `[Unverified]`.
-- Every time a runnable code block is presented to the team during steps 3 to 7 of the engagement sequence (core payments through issuing, including sub-agent design reviews that produce code), also append it to `outputs/<short-engagement-name>/implementation-detailed.md` under a heading naming the component, with a language-tagged fenced code block. Create the file on first append with a single H1 header naming the engagement. This file accumulates over the session and is finalized by `/wrap-up`.
+- Every time a runnable code block is presented to the team during steps 3 to 13 of the engagement sequence (core payments through Crypto Onramp, including sub-agent design reviews that produce code), also append it to `outputs/<short-engagement-name>/implementation-detailed.md` under a heading naming the component, with a language-tagged fenced code block. Create the file on first append with a single H1 header naming the engagement. This file accumulates over the session and is finalized by `/wrap-up`.
 
 ---
 
