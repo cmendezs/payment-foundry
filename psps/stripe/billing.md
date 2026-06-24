@@ -41,6 +41,8 @@ Stripe Billing builds on a small set of objects that fit together as follows:
 
 The relationship chain is: **Product -> Price -> Subscription -> Invoice -> PaymentIntent**. A Subscription Item ties a Subscription to a specific Price (and optional quantity), and Invoice Items can add one-off charges (e.g., setup fees, proration adjustments) onto an invoice alongside the recurring line items.
 
+The `Product` and `Price` objects are shared catalog primitives also used by Stripe Tax and the API path of Payment Links. The fields most often configured wrong at the Billing/Tax boundary (`Product.tax_code`, `Price.tax_behavior`, `Price.currency_options` for multi-currency, `Price.lookup_key` for test/live parity) are covered in [`products-and-prices.md`](products-and-prices.md). Set them at catalog creation; backfilling once Subscriptions reference the Price is operationally painful.
+
 ## Code Examples
 
 ### 1. Create a recurring Price
@@ -266,6 +268,24 @@ As an alternative to a custom Elements-based integration, **Stripe Checkout** pr
 
 This is a reasonable starting point for teams prioritizing time-to-market over UI control, revisit with `sub-agents/frontend-developer.md` if checkout customization needs grow.
 
+## Stablecoin subscriptions
+
+Billing supports stablecoin-funded subscriptions via the same Payment Element flow used for card and bank-debit subscriptions. When stablecoin acceptance is enabled on the account (see `payments.md` Stablecoin payments via Optimized Checkout), a Subscription's initial PaymentIntent can be funded with a stablecoin, and Stripe stores the equivalent of a mandate so subsequent renewal invoices charge against the same source.
+
+Behavior worth flagging during scoping:
+
+- **Renewal failure modes are different from card.** On-chain renewal failures (customer's wallet drained, source-of-funds revoked, network congestion at renewal time) have different recovery patterns than card-decline retries. Smart Retries behavior may not apply identically; verify against the canonical docs.
+- **Dunning UX wording**. Standard dunning emails reference card-language ("update your card"); for stablecoin-funded subscriptions the customer-facing language needs to match the funding source. Confirm Stripe's templates handle this for the team's market, or override.
+- **Mandate semantics**. The mandate-equivalent for stablecoin recurring payments differs from card mandates in legal characterization and customer-facing disclosure. Review with `sub-agents/compliance-officer.md` before going live in regulated markets.
+
+The cross-cutting model (regulatory framing, supported assets, settle-in-stablecoin vs. settle-in-fiat, Open Issuance) is in [`stablecoins.md`](stablecoins.md). Load it when stablecoin subscriptions are in scope.
+
+## Tax on Invoices
+
+When Stripe Tax is in scope alongside Billing, set `automatic_tax: { enabled: true }` on the Subscription or Invoice and tax appears as a calculated line on the finalized invoice. Prerequisites (active registrations in the customer's jurisdiction, `Product.tax_code`, `Price.tax_behavior` set to `inclusive` or `exclusive`, a defensible `Customer.address`) and the full integration pattern are covered in [`tax.md`](tax.md). The most common Billing-side failure mode is enabling `automatic_tax` on a Subscription whose Price has `tax_behavior: 'unspecified'`; invoice finalization fails or returns zero tax. Validate against a real registered jurisdiction after enabling.
+
+For B2B subscriptions where the customer provides a Tax ID (e.g., EU VAT number), Stripe Tax applies reverse charge when applicable; the integration's responsibility is to capture and attach the Tax ID to the `Customer`, see [`tax.md`](tax.md) Customer Tax IDs and Reverse Charge.
+
 ## Testing
 
 Stripe **Test Clocks** let you simulate the passage of time for subscriptions in test mode, useful for verifying renewals, mid-cycle plan changes, trial transitions, and multi-phase Subscription Schedules without waiting for real billing periods to elapse. Test Clocks only work in test mode. See `psps/stripe/testing-and-ops.md` for general test/live mode practices.
@@ -296,5 +316,8 @@ Stripe **Test Clocks** let you simulate the passage of time for subscriptions in
 - Coupons: https://stripe.com/docs/billing/subscriptions/coupons
 - Customer Portal: https://stripe.com/docs/billing/subscriptions/integrating-customer-portal
 - Test Clocks: https://stripe.com/docs/billing/testing/test-clocks
+- Catalog primitives shared with Tax and Payment Links: see `psps/stripe/products-and-prices.md`
+- Tax on invoices: see `psps/stripe/tax.md`
+- Stablecoin-funded subscriptions (cross-cutting model): see `psps/stripe/stablecoins.md`
 - Core payment flow and webhooks: see `psps/stripe/payments.md`
 - Test/live mode practices: see `psps/stripe/testing-and-ops.md`

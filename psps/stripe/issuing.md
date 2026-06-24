@@ -141,6 +141,18 @@ const topup = await stripe.topups.create({
 
 [Unverified] Funding flow (top-ups vs. direct bank funding instructions vs. automatic from platform balance) depends on account setup and country, confirm at https://stripe.com/docs/issuing/funding/overview
 
+## Spending stablecoin balances
+
+For US businesses using Treasury stablecoin financial accounts (see [`treasury.md`](treasury.md) Stablecoin financial accounts), an Issuing card can be linked to a financial account whose primary balance is a stablecoin. Card authorizations draw against the stablecoin balance, with conversion to fiat happening at the network at authorization time (Stripe handles the on-chain leg).
+
+The Issuing-side integration is largely the same as a fiat-funded card: cardholder, card, spending controls, and authorization webhooks all behave as documented above. What changes:
+
+- **Balance gating** is against the stablecoin balance (denominated in tokens), with the authorization amount converted at the prevailing rate. Surface this in the integration's pre-authorization balance checks, especially for real-time authorization handlers.
+- **Funding alerts and top-ups** target the stablecoin balance, not a fiat funding path. Pair this with the team's Treasury operations.
+- **Reconciliation** records two cash legs per spend (stablecoin deducted, fiat presented to the merchant), which the ledger needs to represent. See [`treasury.md`](treasury.md) Reconciliation and Ledgering and the dual-currency note in [`stablecoins.md`](stablecoins.md).
+
+The cross-cutting model (regulatory framing, supported assets, conversion mechanics, Open Issuance) is in [`stablecoins.md`](stablecoins.md). Load it when stablecoin-funded card spend is in scope.
+
 ## Common Implementation Pitfalls
 
 1. **Real-time authorization timeout handling.** If the webhook handler does not respond within Stripe's timeout, or errors, the authorization is handled according to a default behavior that may not match the team's risk tolerance. Confirm and test this default explicitly, do not assume.
@@ -165,3 +177,4 @@ const topup = await stripe.topups.create({
 - Real-time authorizations: https://stripe.com/docs/issuing/controls/real-time-authorizations
 - Issuing webhooks: https://stripe.com/docs/issuing/webhooks
 - Funding: https://stripe.com/docs/issuing/funding/overview
+- Cards funded from a Treasury stablecoin balance: see `psps/stripe/treasury.md` and `psps/stripe/stablecoins.md`

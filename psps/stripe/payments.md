@@ -17,6 +17,8 @@ Use these pointers during `/validate-context` and before generating final integr
   - https://stripe.com/docs/payments/extended-authorization covers extended-auth windows per network
   - https://stripe.com/docs/payments/klarna, .../paypal, .../bancontact, .../ideal cover per-payment-method timing and constraints
   - https://stripe.com/docs/payments/account/statement-descriptors covers statement descriptor format rules
+  - https://stripe.com/docs/payment-links covers Payment Links creation, behavior, and customization
+  - https://stripe.com/docs/api/payment_links covers the Payment Links API, line items, after-completion actions, and Connect parameters
 - **API Changelog:** https://stripe.com/docs/upgrades, watch for breaking changes to PaymentIntents, refunds, capture, and webhook event names referenced in this file.
 - **Stripe MCP hints (if connected):**
   - To check Multi-Capture support for a given PaymentMethod on the connected account, inspect `payment_method_options.card.multi_capture_supported` on a created PaymentIntent.
@@ -52,6 +54,123 @@ When configuring how the Payment Element decides which payment methods to show, 
 - **`payment_method_types: [...]`**: explicitly list which payment method types to enable on the PaymentIntent. Useful when custom business logic needs to filter which methods are offered (e.g., excluding a method for certain order types), or for use cases not yet supported by `automatic_payment_methods` (e.g., some Billing/subscription scenarios).
 
 An integration path allows rendering the Payment Element **before** creating a PaymentIntent (deferred-intent confirmation), with the PaymentIntent created and confirmed at submission time, either client-side or server-side. This path is attractive for dynamic checkouts where the final amount or currency is not known until the customer interacts with the page (e.g., shipping method selection changes the total). [Unverified: confirm current availability and exact pattern via the Verification References block, status and required parameters have shifted between releases.]
+
+### Alternative: Payment Links (no-code or API)
+
+Payment Links are Stripe-hosted checkout pages identified by a shareable URL. The team does not host the checkout UI; Stripe does. A Payment Link references one or more Prices (see [`products-and-prices.md`](products-and-prices.md)) and, on submission, creates a PaymentIntent (one-time Prices) or a Subscription (recurring Prices) and routes the customer through Stripe's hosted page, 3DS challenge if needed, and confirmation.
+
+**When to choose Payment Links over the Payment Element:**
+
+- Lowest possible integration effort: a salesperson, marketing site, or invoice can paste a link with zero frontend code.
+- The catalog is stable and the team is comfortable managing offerings in the Dashboard or via a small set of API calls, rather than dynamically generating checkout on every visit.
+- The team can accept Stripe's hosted-page UX in exchange for not building or maintaining checkout themselves.
+
+**When to stay on the Payment Element:**
+
+- Checkout is part of a tightly designed in-product flow and the team needs full UX control (custom layout, embedded steps, branded interactions beyond Stripe's appearance API).
+- Per-session pricing logic is highly dynamic (e.g., personalized discounts computed per visit) and pre-creating links is impractical.
+- Order data (line items, custom fields, conditional logic) is computed at request time from systems the Dashboard cannot reach.
+
+This is a UX-vs.-control tradeoff, review with `sub-agents/solution-architect.md`, `sub-agents/frontend-developer.md`, and `sub-agents/head-of-payments.md` when both options are on the table. Many teams use both: Payment Links for ad hoc sales, invoices, and marketing surfaces; Payment Element for the main product's in-app checkout.
+
+#### Dashboard-created links (recommended first step)
+
+For most teams the first Payment Link is created in the Dashboard: pick a Product/Price, set after-payment behavior (redirect URL, confirmation page), set inventory limits or expiry if needed, and copy the resulting URL. This is the right place to start because it surfaces every available option in one screen and produces a working link in minutes, without code.
+
+Dashboard-created links emit the same webhook events as API-created links (`checkout.session.completed`, `payment_intent.succeeded`, `customer.subscription.created` for subscriptions). The integration's webhook handler treats both paths uniformly; only the creation path differs.
+
+#### API-created links (programmatic)
+
+When Payment Links need to be generated programmatically (e.g., one link per quote, per order, per customer), use the API. The link references existing Prices, so create the catalog first via [`products-and-prices.md`](products-and-prices.md).
+
+```javascript
+const Stripe = require('stripe');
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+const paymentLink = await stripe.paymentLinks.create({
+  line_items: [
+    { price: 'price_1NXYZpro_plan_monthly_usd', quantity: 1 },
+  ],
+  after_completion: {
+    type: 'redirect',
+    redirect: { url: 'https://example.com/order/complete?session={CHECKOUT_SESSION_ID}' },
+  },
+  metadata: { quoteId: 'q_12345' },
+});
+
+// paymentLink.url is the shareable URL to send to the customer.
+```
+
+The `{CHECKOUT_SESSION_ID}` placeholder is substituted by Stripe at redirect time; the integration can then retrieve the `Checkout Session` to look up the resulting PaymentIntent or Subscription and reconcile against the original quote via `metadata.quoteId`.
+
+Common parameters worth knowing at scoping time:
+
+- `line_items`: one or more `{ price, quantity }` entries. For a recurring Price, this creates a Subscription on completion rather than a one-time PaymentIntent.
+- `after_completion`: `redirect` to a URL the team controls, or `hosted_confirmation` to show a Stripe-hosted confirmation message.
+- `allow_promotion_codes`: whether the customer can enter a promotion code at checkout.
+- `automatic_tax: { enabled: true }`: enables Stripe Tax calculation on the link, see [`tax.md`](tax.md) for prerequisites (registrations, `tax_code` on Products, `tax_behavior` on Prices).
+- `phone_number_collection`, `shipping_address_collection`, `custom_fields`: data to collect at checkout.
+- `restrictions.completed_sessions.limit`: cap the number of times the link can be used (e.g., a one-shot link for a single customer).
+
+#### Connect: `on_behalf_of` and per-account Payment Links
+
+For platforms using Connect (see [`platform.md`](platform.md)), there are two API patterns depending on which account the link should be created on:
+
+**Pattern A: platform-account link with `on_behalf_of` and `transfer_data`.** The link lives on the platform account but settles funds to the connected account. Use this when the platform wants centralized control over link creation, catalog, and analytics, while the connected account receives the funds.
+
+```javascript
+const paymentLink = await stripe.paymentLinks.create({
+  line_items: [{ price: 'price_1NXYZmarketplace_item', quantity: 1 }],
+  on_behalf_of: connectedAccountId,
+  transfer_data: { destination: connectedAccountId },
+  application_fee_amount: 500, // platform keeps $5.00
+  after_completion: {
+    type: 'redirect',
+    redirect: { url: 'https://platform.example.com/order/complete?session={CHECKOUT_SESSION_ID}' },
+  },
+});
+```
+
+`on_behalf_of` makes the connected account the merchant of record for settlement currency, fee determination, and statement descriptor purposes (see Charge-type currency determination in [`platform.md`](platform.md)). `transfer_data.destination` routes the funds to the connected account, less `application_fee_amount`.
+
+**Pattern B: link created directly on the connected account.** The link lives on the connected account itself. Use the `Stripe-Account` header (or the SDK's per-call account option) to scope the call. This fits the Standard account type, where the connected account manages its own catalog and dashboard, and platforms with embedded components.
+
+```javascript
+const paymentLink = await stripe.paymentLinks.create(
+  {
+    line_items: [{ price: 'price_1NXYZconnected_account_item', quantity: 1 }],
+    application_fee_amount: 500,
+    after_completion: { type: 'hosted_confirmation' },
+  },
+  { stripeAccount: connectedAccountId },
+);
+```
+
+The `Price` referenced here must exist on the connected account, not the platform account. This is the most common source of confusion when moving from Pattern A to Pattern B: the catalogs are separate.
+
+The choice between A and B is a structural one, review with `sub-agents/solution-architect.md` (which account owns the catalog and reporting), `sub-agents/frontend-developer.md` (where the link surface lives and who customizes it), and `sub-agents/head-of-payments.md` (merchant-of-record, statement descriptor, and dispute-handling implications).
+
+#### Webhook handling for Payment Links
+
+Payment Links create a `Checkout Session` behind the scenes, which then drives the underlying PaymentIntent or Subscription. The events to handle:
+
+- `checkout.session.completed`: fired once when the customer completes checkout. The session object includes the resulting `payment_intent` or `subscription` ID, and any `metadata` set on the link or session.
+- `payment_intent.succeeded` / `payment_intent.payment_failed`: the same events as the core flow in this file; treat them as the source of truth for one-time payment outcomes.
+- `customer.subscription.created` / `invoice.paid`: for recurring Prices, the same Billing events documented in [`billing.md`](billing.md).
+
+Reconcile back to internal records via `metadata` set on the link at creation time (e.g., `metadata.quoteId`, `metadata.orderId`). The Checkout Session's `metadata` is copied through from the link.
+
+#### Common Payment Links pitfalls
+
+1. **Mixing platform-account and connected-account catalogs.** A link created on the platform account cannot reference a Price that exists only on a connected account, and vice versa. Decide which account owns the catalog before generating links at scale.
+
+2. **Forgetting that `automatic_tax: { enabled: true }` requires upstream setup.** Tax registrations, Product `tax_code`, and Price `tax_behavior` must all be in place. See [`tax.md`](tax.md) for the full prerequisites.
+
+3. **Treating the redirect as the source of truth for completion.** The customer's browser landing on the redirect URL does not guarantee the payment succeeded (the customer can navigate away mid-redirect, or 3DS may still be resolving). Use the webhook events as the source of truth, the same principle as the Payment Element flow.
+
+4. **Hardcoding link URLs in templates.** API-created links can be regenerated, but Dashboard-created links have stable URLs that should be treated as integration constants: changing them silently breaks every place they were pasted. Store dashboard link URLs in a single source the team can update.
+
+5. **Skipping `restrictions.completed_sessions.limit` for one-shot links.** A link intended for a single customer can be forwarded; if a single use is the intent, cap it explicitly rather than relying on social convention.
 
 ### Not recommended for new integrations: Charges API
 
@@ -299,6 +418,19 @@ The Payment Element (see above) handles these automatically for most integration
 - **iDEAL requires the `eur` currency**, confirm the PaymentIntent's currency before offering iDEAL.
 - **Bancontact** supports a `payment_method_options.bancontact.preferred_language` parameter (`fr`, `nl`, or `de`), useful for Belgian customers where the redirect page language should match the storefront locale.
 
+### Stablecoin payments via Optimized Checkout
+
+When enabled on the account, supported stablecoins (USDC and others, per region and per Stripe agreement) surface in the Payment Element, Checkout Sessions, and Payment Links automatically under `automatic_payment_methods: { enabled: true }`. No per-method integration is required on the acceptance side; what changes is the post-acceptance behavior:
+
+- **Settlement mode**: the team's account is configured to settle in fiat (Stripe converts on-chain at acceptance) or to keep the stablecoin balance (settle-in-stablecoin), per market availability. This is account-level, not per-PaymentIntent.
+- **Refunds**: typically routed back to the customer's wallet on-chain, with different windows and finality semantics from card refunds. Support and operations processes need to handle this path.
+- **No card-network dispute path**: on-chain payments do not have chargebacks, so the dispute model from `fraud-and-disputes.md` does not apply to stablecoin payments. Stripe handles fraud on the acceptance side as merchant of record; the team's support process needs a separate path for stablecoin payment disputes.
+- **Reconciliation cadence differs from card.** Confirmation-window timing is on-chain rather than card-network-driven, see `reports.md`.
+
+The cross-cutting model (regulatory framing, supported assets per surface, settle-in-stablecoin vs. settle-in-fiat, Treasury and Issuing pairings, Open Issuance) is in [`stablecoins.md`](stablecoins.md). Load it when stablecoin acceptance is in scope for the engagement.
+
+This is a `sub-agents/head-of-payments.md`, `sub-agents/frontend-developer.md`, and `sub-agents/finance-treasury.md` scoping conversation before it is an integration one. The integration code is mostly a flag flip; the operational implications are not.
+
 ## Multi-Capture
 
 Multi-Capture is the pattern where a single authorized PaymentIntent is captured in multiple, separate captures (e.g., as different parts of an order ship), instead of one capture for the full amount.
@@ -394,5 +526,9 @@ The statement descriptor is what appears on the customer's card statement for a 
 - Statement descriptors: https://stripe.com/docs/payments/account/statement-descriptors
 - Elements Appearance API: https://stripe.com/docs/elements/appearance-api
 - Payment Element vs. Card Element: https://stripe.com/docs/payments/payment-card-element-comparison
+- Payment Links overview: https://stripe.com/docs/payment-links
+- Payment Links API: https://stripe.com/docs/api/payment_links
+- Products and Prices catalog used by Payment Links: see `psps/stripe/products-and-prices.md`
+- Stablecoin payments (cross-cutting model): see `psps/stripe/stablecoins.md`
 - Fraud, 3DS, and disputes: see `psps/stripe/fraud-and-disputes.md`
 - Reporting and reconciliation: see `psps/stripe/reports.md`
