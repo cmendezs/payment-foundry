@@ -41,7 +41,8 @@ Jedna sesja. Osiem perspektyw. Jeden Implementation Brief, który Twoi inżynier
   /validate-context  ->  Weryfikacja zawartości referencyjnej PSP wobec oficjalnych źródeł
       |
       v
-  Główne płatności -> Webhooki -> Platforma / Terminal / Wydawanie kart (zgodnie z zakresem)
+  Główne płatności -> Webhooki -> Produkty i Ceny -> Podatki -> Platforma -> Capital
+                                          -> Terminal -> Wydawanie kart -> Treasury -> Stablecoiny -> Crypto Onramp (zgodnie z zakresem)
       |
       v
   Przeglądy specjalistów (zatwierdź / oznacz / zablokuj)
@@ -56,7 +57,7 @@ Jedna sesja. Osiem perspektyw. Jeden Implementation Brief, który Twoi inżynier
 
 | PSP | Status | Linie produktowe |
 |---|---|---|
-| Stripe | Dostępny | Płatności, Platforma (Connect), Terminal, Wydawanie kart (Issuing) |
+| Stripe | Dostępny | Płatności (w tym Payment Links), Produkty i Ceny, Billing, Podatki, Platforma (Connect), Capital, Terminal, Wydawanie kart (Issuing), Treasury, Stablecoiny, Crypto Onramp, Oszustwa i Spory (Radar), Raportowanie |
 
 Planowane są kolejne PSP. Aby poprosić o nowy lub wnieść wkład, otwórz issue lub pull request.
 
@@ -128,13 +129,19 @@ Typowe zaangażowanie przechodzi przez te etapy w kolejności:
 1. **Zakres** : przypadek użycia, stos technologiczny, rynki, waluty, harmonogram, wielkość zespołu
 2. **Wymagania interesariuszy** : Kierownik ds. Płatności, Zgodność, Oszustwa, Backend, Frontend, Architektura, Bezpieczeństwo, Finanse, zbierane konwersacyjnie i zapisywane jako pliki referencyjne
 3. **Walidacja kontekstu** : `/validate-context` weryfikuje fakty specyficzne dla PSP w zakresie wobec oficjalnych źródeł i zapisuje elementy zweryfikowane, niezweryfikowane i zablokowane
-4. **Główne płatności** : Payment Intents, interfejs płatności, obsługa potwierdzenia
+4. **Główne płatności** : Payment Intents, Payment Element, Payment Links, obsługa potwierdzenia
 5. **Webhooki** : obsługa zdarzeń, rekoncyliacja stanu zamówień, ponawianie
-6. **Przepływy platformowe** (jeśli dotyczy) : Connect, płatności wielostronne
-7. **Przepływy osobiste** (jeśli dotyczy) : Terminal, zarządzanie czytnikami
-8. **Wydawanie kart** (jeśli dotyczy) : wydane karty, kontrole wydatków, autoryzacje
-9. **Przeglądy specjalistów** : każdy pod-agent ładuje swój plik wymagań, analizuje istotne decyzje i tworzy wynik zatwierdź / oznacz / zablokuj z uzasadnieniem
-10. **Artefakty zaangażowania** : wykonawczy Implementation Brief, szczegółowy Przewodnik Implementacji zorientowany na kod i Checklista Gotowości do Go-Live dla danego zaangażowania
+6. **Katalog Produktów i Cen** (jeśli Billing lub Podatki są w zakresie) : współdzielone prymitywy katalogu (`Product`, `Price`, `tax_code`, `tax_behavior`, `currency_options`), do ustalenia raz przed każdym konsumentem
+7. **Podatki** (jeśli dotyczy) : rejestracje, automatyczne naliczanie podatku na Invoices i Checkout, Tax IDs, reverse charge, marketplace facilitator pod Connect
+8. **Przepływy platformowe** (jeśli dotyczy) : Connect, płatności wielostronne, opłaty platformy
+9. **Capital** (jeśli dotyczy) : finansowanie oferowane przez platformę, kwalifikacja, ujawnienia, kierowanie spłat
+10. **Przepływy osobiste** (jeśli dotyczy) : Terminal, zarządzanie czytnikami, Payment Intents osobiste
+11. **Wydawanie kart** (jeśli dotyczy) : wydane karty, kontrole wydatków, webhooki autoryzacji
+12. **Treasury** (jeśli dotyczy) : konta finansowe, ruchy pieniężne, model księgi pending vs. final, parowanie z Issuing
+13. **Rozszerzenia stablecoin** (jeśli dotyczy) : akceptacja przez Optimized Checkout, salda stablecoin Treasury, wydatki kart Issuing z salda stablecoin, Open Issuance przez Bridge
+14. **Crypto Onramp** (jeśli dotyczy) : wbudowany zakup fiat-na-krypto, tryby integracji i KYC, Stripe jako merchant of record
+15. **Przeglądy specjalistów** : każdy pod-agent ładuje swój plik wymagań, analizuje istotne decyzje i tworzy wynik zatwierdź / oznacz / zablokuj z uzasadnieniem
+16. **Artefakty zaangażowania** : wykonawczy Implementation Brief, szczegółowy Przewodnik Implementacji zorientowany na kod i Checklista Gotowości do Go-Live dla danego zaangażowania
 
 Engagement Manager proponuje tę sekwencję na początku i dostosowuje ją do tego, co faktycznie jest w zakresie Twojego zespołu.
 
@@ -201,10 +208,20 @@ payment-foundry/
 ├── psps/                            # Zawartość referencyjna PSP, ładowana w czasie wykonania
 │   └── stripe/
 │       ├── README.md                # Indeks: który plik obejmuje co
-│       ├── payments.md
-│       ├── platform.md
-│       ├── terminal.md
-│       └── issuing.md
+│       ├── payments.md              # Payment Intents, Payment Element, Payment Links
+│       ├── products-and-prices.md   # Współdzielone prymitywy katalogu (Product, Price, tax_code, tax_behavior)
+│       ├── billing.md               # Subskrypcje, fakturowanie, portal klienta, dunning
+│       ├── tax.md                   # Stripe Tax: rejestracje, automatyczny podatek, Tax IDs
+│       ├── platform.md              # Connect: Standard / Express / Custom, transfery, wypłaty
+│       ├── capital.md               # Stripe Capital (finansowanie Connect dla podłączonych kont)
+│       ├── terminal.md              # Osobiście / point-of-sale: czytniki, connection tokeny
+│       ├── issuing.md               # Wydawanie kart: posiadacze, kontrole wydatków, autoryzacje
+│       ├── treasury.md              # Wbudowana bankowość (konta finansowe, ACH/wire, OutboundPayments)
+│       ├── stablecoins.md           # Przekrojowe: akceptacja Optimized Checkout, salda, Open Issuance
+│       ├── crypto-onramp.md         # Wbudowany zakup fiat-na-krypto (Stripe jako merchant of record)
+│       ├── fraud-and-disputes.md    # Radar (w tym Fraud Teams), 3DS, obciążenia zwrotne
+│       ├── reports.md               # API raportowania, Activity Report, Sigma
+│       └── testing-and-ops.md       # Tryb test/live, testowanie webhooków, wersjonowanie API
 │
 ├── context/                         # Szablony zakresu i wymagań
 │   ├── business-info.md              # Przewodnik zakresu /start-session

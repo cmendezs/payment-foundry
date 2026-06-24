@@ -41,7 +41,8 @@ Une session. Huit perspectives. Un Brief d'Implémentation que vos ingénieurs p
   /validate-context  ->  Vérifier le contenu de référence PSP par rapport aux sources officielles
       |
       v
-  Paiements principaux -> Webhooks -> Plateforme / Terminal / Émission de cartes (selon le périmètre)
+  Paiements principaux -> Webhooks -> Produits et Prix -> Taxe -> Plateforme -> Capital
+                                          -> Terminal -> Émission de cartes -> Treasury -> Stablecoins -> Crypto Onramp (selon le périmètre)
       |
       v
   Revues de spécialistes (approuver / signaler / bloquer)
@@ -56,7 +57,7 @@ Une session. Huit perspectives. Un Brief d'Implémentation que vos ingénieurs p
 
 | PSP | Statut | Lignes de produits |
 |---|---|---|
-| Stripe | Disponible | Paiements, Plateforme (Connect), Terminal, Émission de cartes (Issuing) |
+| Stripe | Disponible | Paiements (y compris Payment Links), Produits et Prix, Billing, Taxe, Plateforme (Connect), Capital, Terminal, Émission de cartes (Issuing), Treasury, Stablecoins, Crypto Onramp, Fraude et Litiges (Radar), Reporting |
 
 D'autres PSPs sont prévus. Pour en demander un ou contribuer, ouvrez une issue ou une pull request.
 
@@ -128,13 +129,19 @@ Un engagement typique passe par ces étapes dans l'ordre :
 1. **Cadrage** : cas d'usage, stack technique, marchés, devises, calendrier, taille de l'équipe
 2. **Exigences des parties prenantes** : Responsable des Paiements, Conformité, Fraude, Backend, Frontend, Architecture, Sécurité, Finance, capturées de manière conversationnelle et sauvegardées comme fichiers de référence
 3. **Validation du contexte** : `/validate-context` vérifie les faits spécifiques au PSP dans le périmètre par rapport aux sources officielles et enregistre les éléments vérifiés, non vérifiés et bloqués
-4. **Paiements principaux** : Payment Intents, interface de paiement, gestion de la confirmation
+4. **Paiements principaux** : Payment Intents, Payment Element, Payment Links, gestion de la confirmation
 5. **Webhooks** : gestion des événements, réconciliation de l'état des commandes, relances
-6. **Flux plateforme** (si applicable) : Connect, paiements multi-parties
-7. **Flux en personne** (si applicable) : Terminal, gestion des lecteurs
-8. **Émission de cartes** (si applicable) : cartes émises, contrôles de dépenses, autorisations
-9. **Revues de spécialistes** : chaque sous-agent charge son fichier d'exigences, examine les décisions pertinentes et produit un résultat approuver / signaler / bloquer avec justification
-10. **Artefacts de l'engagement** : Brief d'Implémentation exécutif, Guide d'Implémentation Détaillé orienté code, et Checklist de Préparation à la Mise en Production par engagement
+6. **Catalogue Produits et Prix** (si Billing ou Taxe dans le périmètre) : primitives de catalogue partagées (`Product`, `Price`, `tax_code`, `tax_behavior`, `currency_options`), à arrêter une fois avant tout consommateur
+7. **Taxe** (si applicable) : enregistrements, calcul de taxe automatique sur Invoices et Checkout, Tax IDs, autoliquidation, marketplace facilitator sous Connect
+8. **Flux plateforme** (si applicable) : Connect, paiements multi-parties, frais de plateforme
+9. **Capital** (si applicable) : financement proposé par la plateforme, éligibilité, divulgations, routage des remboursements
+10. **Flux en personne** (si applicable) : Terminal, gestion des lecteurs, Payment Intents en personne
+11. **Émission de cartes** (si applicable) : cartes émises, contrôles de dépenses, webhooks d'autorisation
+12. **Treasury** (si applicable) : comptes financiers, mouvements de fonds, modèle de grand livre pending vs. final, pairing avec Issuing
+13. **Extensions stablecoins** (si applicable) : acceptation via Optimized Checkout, soldes stablecoin Treasury, dépenses de cartes Issuing depuis un solde stablecoin, Open Issuance via Bridge
+14. **Crypto Onramp** (si applicable) : achat fiat-vers-crypto embarqué, modes d'intégration et de KYC, Stripe en tant que merchant of record
+15. **Revues de spécialistes** : chaque sous-agent charge son fichier d'exigences, examine les décisions pertinentes et produit un résultat approuver / signaler / bloquer avec justification
+16. **Artefacts de l'engagement** : Brief d'Implémentation exécutif, Guide d'Implémentation Détaillé orienté code, et Checklist de Préparation à la Mise en Production par engagement
 
 Le Responsable d'Engagement propose cette séquence au démarrage et l'adapte à ce qui est réellement dans le périmètre de votre équipe.
 
@@ -201,10 +208,20 @@ payment-foundry/
 ├── psps/                            # Contenu de référence PSP, chargé à l'exécution
 │   └── stripe/
 │       ├── README.md                # Index : quel fichier couvre quoi
-│       ├── payments.md
-│       ├── platform.md
-│       ├── terminal.md
-│       └── issuing.md
+│       ├── payments.md              # Payment Intents, Payment Element, Payment Links
+│       ├── products-and-prices.md   # Primitives de catalogue partagées (Product, Price, tax_code, tax_behavior)
+│       ├── billing.md               # Abonnements, facturation, portail client, dunning
+│       ├── tax.md                   # Stripe Tax : enregistrements, taxe automatique, Tax IDs
+│       ├── platform.md              # Connect : Standard / Express / Custom, transferts, virements
+│       ├── capital.md               # Stripe Capital (financement Connect pour les comptes connectés)
+│       ├── terminal.md              # En personne / point-of-sale : lecteurs, connection tokens
+│       ├── issuing.md               # Émission de cartes : titulaires, contrôles de dépenses, autorisations
+│       ├── treasury.md              # Banque embarquée (comptes financiers, ACH/wires, OutboundPayments)
+│       ├── stablecoins.md           # Transversal : acceptation Optimized Checkout, soldes, Open Issuance
+│       ├── crypto-onramp.md         # Achat fiat-vers-crypto embarqué (Stripe en tant que merchant of record)
+│       ├── fraud-and-disputes.md    # Radar (y compris Fraud Teams), 3DS, rétrofacturations
+│       ├── reports.md               # API de reporting, Activity Report, Sigma
+│       └── testing-and-ops.md       # Mode test/live, test des webhooks, versionnement de l'API
 │
 ├── context/                         # Modèles de cadrage et d'exigences
 │   ├── business-info.md              # Guide de cadrage /start-session

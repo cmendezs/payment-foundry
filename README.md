@@ -41,7 +41,8 @@ One session. Eight perspectives. One Implementation Brief your engineers can exe
   /validate-context  ->  Verify PSP reference content against authoritative sources
       |
       v
-  Core Payments -> Webhooks -> Platform / Terminal / Issuing (as in scope)
+  Core Payments -> Webhooks -> Products & Prices -> Tax -> Platform -> Capital
+                                        -> Terminal -> Issuing -> Treasury -> Stablecoins -> Crypto Onramp (as in scope)
       |
       v
   Specialist Reviews (approve / flag / block)
@@ -56,7 +57,7 @@ One session. Eight perspectives. One Implementation Brief your engineers can exe
 
 | PSP | Status | Product Lines |
 |---|---|---|
-| Stripe | Available | Payments, Platform (Connect), Terminal, Issuing |
+| Stripe | Available | Payments (incl. Payment Links), Products & Prices, Billing, Tax, Platform (Connect), Capital, Terminal, Issuing, Treasury, Stablecoins, Crypto Onramp, Fraud & Disputes (Radar), Reports |
 
 More PSPs are planned. To request one or contribute, open an issue or pull request.
 
@@ -128,13 +129,19 @@ A typical engagement moves through these stages in order:
 1. **Scope** - Use case, tech stack, markets, currencies, timeline, team size
 2. **Stakeholder requirements** - Head of Payments, Compliance, Fraud, Backend, Frontend, Architecture, Security, Finance captured conversationally and saved as reference files
 3. **Context validation** - `/validate-context` checks the PSP-specific facts in scope against authoritative sources and records verified, unverified, and blocked items
-4. **Core payments** - Payment Intents, checkout UI, confirmation handling
+4. **Core payments** - Payment Intents, Payment Element, Payment Links, confirmation handling
 5. **Webhooks** - Event handling, order state reconciliation, retries
-6. **Platform flows** (if applicable) - Connect, multi-party payouts
-7. **In-person flows** (if applicable) - Terminal, reader management
-8. **Card issuing** (if applicable) - Issued cards, spend controls, authorizations
-9. **Specialist reviews** - Each sub-agent loads its requirements file, reviews the relevant decisions, and outputs approve / flag / block with reasoning
-10. **Engagement Artifacts** - Executive Implementation Brief, code-heavy Detailed Implementation Guide, and per-engagement Go-Live Readiness Checklist
+6. **Products and Prices catalog** (if Billing or Tax in scope) - Shared catalog primitives (`Product`, `Price`, `tax_code`, `tax_behavior`, `currency_options`), settled once before either consumer
+7. **Tax** (if applicable) - Registrations, automatic tax on Invoices and Checkout, Tax IDs, reverse charge, marketplace facilitator under Connect
+8. **Platform flows** (if applicable) - Connect, multi-party payouts, platform fees
+9. **Capital** (if applicable) - Platform-offered financing, eligibility, disclosures, repayment routing
+10. **In-person flows** (if applicable) - Terminal, reader management, in-person Payment Intents
+11. **Card issuing** (if applicable) - Issued cards, spend controls, authorization webhooks
+12. **Treasury** (if applicable) - Financial accounts, money movement, pending-vs.-final ledger, Issuing pairing
+13. **Stablecoin extensions** (if applicable) - Acceptance via Optimized Checkout, Treasury stablecoin balances, Issuing card spend from stablecoin, Open Issuance via Bridge
+14. **Crypto Onramp** (if applicable) - Embeddable fiat-to-crypto purchase, integration and KYC modes, Stripe as merchant of record
+15. **Specialist reviews** - Each sub-agent loads its requirements file, reviews the relevant decisions, and outputs approve / flag / block with reasoning
+16. **Engagement Artifacts** - Executive Implementation Brief, code-heavy Detailed Implementation Guide, and per-engagement Go-Live Readiness Checklist
 
 The Engagement Manager proposes this sequence at the start and adapts it to what is actually in scope for your team.
 
@@ -201,10 +208,20 @@ payment-foundry/
 ├── psps/                            # PSP reference content, loaded at runtime
 │   └── stripe/
 │       ├── README.md                # Index: which file covers what
-│       ├── payments.md
-│       ├── platform.md
-│       ├── terminal.md
-│       └── issuing.md
+│       ├── payments.md              # Payment Intents, Payment Element, Payment Links
+│       ├── products-and-prices.md   # Shared catalog primitives (Product, Price, tax_code, tax_behavior)
+│       ├── billing.md               # Subscriptions, invoicing, customer portal, dunning
+│       ├── tax.md                   # Stripe Tax: registrations, automatic tax, Tax IDs
+│       ├── platform.md              # Connect: Standard / Express / Custom, transfers, payouts
+│       ├── capital.md               # Stripe Capital (Connect-coupled financing for connected accounts)
+│       ├── terminal.md              # In-person/point-of-sale: readers, connection tokens
+│       ├── issuing.md               # Card issuing: cardholders, spending controls, authorizations
+│       ├── treasury.md              # Embedded banking (financial accounts, ACH/wires, OutboundPayments)
+│       ├── stablecoins.md           # Cross-cutting: Optimized Checkout acceptance, balances, Open Issuance
+│       ├── crypto-onramp.md         # Embeddable fiat-to-crypto purchase (Stripe as merchant of record)
+│       ├── fraud-and-disputes.md    # Radar (incl. Fraud Teams), 3DS, chargebacks
+│       ├── reports.md               # Reporting API, Activity Report, Sigma
+│       └── testing-and-ops.md       # Test/live mode, webhook testing, API versioning
 │
 ├── context/                         # Scoping and requirements templates
 │   ├── business-info.md              # /start-session scoping guide
