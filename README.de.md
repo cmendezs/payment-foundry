@@ -41,7 +41,8 @@ Eine Sitzung. Acht Perspektiven. Ein Implementation Brief, den Ihre Ingenieure d
   /validate-context  ->  PSP-Referenzinhalte gegen autoritative Quellen prüfen
       |
       v
-  Kernzahlungen -> Webhooks -> Plattform / Terminal / Kartenausgabe (je nach Umfang)
+  Kernzahlungen -> Webhooks -> Produkte und Preise -> Steuer -> Plattform -> Capital
+                                       -> Terminal -> Kartenausgabe -> Treasury -> Stablecoins -> Crypto Onramp (je nach Umfang)
       |
       v
   Spezialistenreviews (genehmigen / markieren / blockieren)
@@ -56,7 +57,7 @@ Eine Sitzung. Acht Perspektiven. Ein Implementation Brief, den Ihre Ingenieure d
 
 | PSP | Status | Produktlinien |
 |---|---|---|
-| Stripe | Verfügbar | Zahlungen, Plattform (Connect), Terminal, Kartenausgabe (Issuing) |
+| Stripe | Verfügbar | Zahlungen (inkl. Payment Links), Produkte und Preise, Billing, Steuer, Plattform (Connect), Capital, Terminal, Kartenausgabe (Issuing), Treasury, Stablecoins, Crypto Onramp, Betrug und Streitfälle (Radar), Reporting |
 
 Weitere PSPs sind geplant. Um einen anzufordern oder beizutragen, eröffnen Sie eine Issue oder Pull Request.
 
@@ -128,13 +129,19 @@ Ein typisches Engagement durchläuft diese Phasen der Reihe nach:
 1. **Scoping** : Anwendungsfall, Tech-Stack, Märkte, Währungen, Zeitplan, Teamgröße
 2. **Stakeholder-Anforderungen** : Leiter Zahlungsverkehr, Compliance, Betrugsbekämpfung, Backend, Frontend, Architektur, Sicherheit, Finanzen, im Gespräch erfasst und als Referenzdateien gespeichert
 3. **Kontextvalidierung** : `/validate-context` prüft die PSP-spezifischen Fakten im Umfang gegen autoritative Quellen und dokumentiert verifizierte, unverifizierte und blockierte Elemente
-4. **Kernzahlungen** : Payment Intents, Zahlungsoberfläche, Bestätigungsverarbeitung
+4. **Kernzahlungen** : Payment Intents, Payment Element, Payment Links, Bestätigungsverarbeitung
 5. **Webhooks** : Ereignisverarbeitung, Bestellstatus-Abgleich, Wiederholungen
-6. **Plattformflüsse** (falls zutreffend) : Connect, Mehrteilnehmer-Auszahlungen
-7. **Vor-Ort-Flüsse** (falls zutreffend) : Terminal, Lesegerätverwaltung
-8. **Kartenausgabe** (falls zutreffend) : ausgegebene Karten, Ausgabenkontrollen, Autorisierungen
-9. **Spezialistenreviews** : jeder Unter-Agent lädt seine Anforderungsdatei, prüft die relevanten Entscheidungen und gibt ein Ergebnis ab: genehmigen / markieren / blockieren mit Begründung
-10. **Engagement-Artefakte** : exekutiver Implementation Brief, codeorientierter Detaillierter Implementierungsleitfaden und Go-Live-Bereitschaftscheckliste pro Engagement
+6. **Katalog Produkte und Preise** (falls Billing oder Steuer im Umfang) : gemeinsame Katalog-Primitive (`Product`, `Price`, `tax_code`, `tax_behavior`, `currency_options`), einmal vor jedem Verbraucher festzulegen
+7. **Steuer** (falls zutreffend) : Registrierungen, automatische Steuer auf Invoices und Checkout, Tax IDs, Reverse Charge, Marketplace Facilitator unter Connect
+8. **Plattformflüsse** (falls zutreffend) : Connect, Mehrteilnehmer-Auszahlungen, Plattformgebühren
+9. **Capital** (falls zutreffend) : von der Plattform angebotene Finanzierung, Berechtigung, Offenlegungen, Routing der Rückzahlungen
+10. **Vor-Ort-Flüsse** (falls zutreffend) : Terminal, Lesegerätverwaltung, Vor-Ort-Payment Intents
+11. **Kartenausgabe** (falls zutreffend) : ausgegebene Karten, Ausgabenkontrollen, Autorisierungs-Webhooks
+12. **Treasury** (falls zutreffend) : Finanzkonten, Geldbewegungen, Ledger-Modell pending vs. final, Pairing mit Issuing
+13. **Stablecoin-Erweiterungen** (falls zutreffend) : Akzeptanz via Optimized Checkout, Treasury-Stablecoin-Salden, Issuing-Kartenausgaben aus Stablecoin-Salden, Open Issuance via Bridge
+14. **Crypto Onramp** (falls zutreffend) : eingebettete Fiat-zu-Krypto-Käufe, Integrations- und KYC-Modi, Stripe als Merchant of Record
+15. **Spezialistenreviews** : jeder Unter-Agent lädt seine Anforderungsdatei, prüft die relevanten Entscheidungen und gibt ein Ergebnis ab: genehmigen / markieren / blockieren mit Begründung
+16. **Engagement-Artefakte** : exekutiver Implementation Brief, codeorientierter Detaillierter Implementierungsleitfaden und Go-Live-Bereitschaftscheckliste pro Engagement
 
 Der Engagement Manager schlägt diese Reihenfolge zu Beginn vor und passt sie an das an, was für Ihr Team tatsächlich im Umfang liegt.
 
@@ -201,10 +208,20 @@ payment-foundry/
 ├── psps/                            # PSP-Referenzinhalte, zur Laufzeit geladen
 │   └── stripe/
 │       ├── README.md                # Index: welche Datei was abdeckt
-│       ├── payments.md
-│       ├── platform.md
-│       ├── terminal.md
-│       └── issuing.md
+│       ├── payments.md              # Payment Intents, Payment Element, Payment Links
+│       ├── products-and-prices.md   # Gemeinsame Katalog-Primitive (Product, Price, tax_code, tax_behavior)
+│       ├── billing.md               # Abonnements, Rechnungsstellung, Kundenportal, Dunning
+│       ├── tax.md                   # Stripe Tax: Registrierungen, automatische Steuer, Tax IDs
+│       ├── platform.md              # Connect: Standard / Express / Custom, Transfers, Auszahlungen
+│       ├── capital.md               # Stripe Capital (Connect-Finanzierung für verbundene Konten)
+│       ├── terminal.md              # Vor Ort / Point-of-Sale: Lesegeräte, Connection Tokens
+│       ├── issuing.md               # Kartenausgabe: Karteninhaber, Ausgabenkontrollen, Autorisierungen
+│       ├── treasury.md              # Eingebettetes Banking (Finanzkonten, ACH/Wires, OutboundPayments)
+│       ├── stablecoins.md           # Bereichsübergreifend: Optimized Checkout, Salden, Open Issuance
+│       ├── crypto-onramp.md         # Eingebetteter Fiat-zu-Krypto-Kauf (Stripe als Merchant of Record)
+│       ├── fraud-and-disputes.md    # Radar (inkl. Fraud Teams), 3DS, Rückbuchungen
+│       ├── reports.md               # Reporting API, Activity Report, Sigma
+│       └── testing-and-ops.md       # Test/Live-Modus, Webhook-Tests, API-Versionierung
 │
 ├── context/                         # Scoping- und Anforderungsvorlagen
 │   ├── business-info.md              # Scoping-Leitfaden /start-session

@@ -41,7 +41,8 @@ Uma sessão. Oito perspetivas. Um Implementation Brief que os seus engenheiros p
   /validate-context  ->  Verificar o conteúdo de referência PSP contra fontes oficiais
       |
       v
-  Pagamentos principais -> Webhooks -> Plataforma / Terminal / Emissão de cartões (conforme o escopo)
+  Pagamentos principais -> Webhooks -> Produtos e Preços -> Impostos -> Plataforma -> Capital
+                                            -> Terminal -> Emissão de cartões -> Treasury -> Stablecoins -> Crypto Onramp (conforme o escopo)
       |
       v
   Revisões de especialistas (aprovar / sinalizar / bloquear)
@@ -56,7 +57,7 @@ Uma sessão. Oito perspetivas. Um Implementation Brief que os seus engenheiros p
 
 | PSP | Estado | Linhas de produto |
 |---|---|---|
-| Stripe | Disponível | Pagamentos, Plataforma (Connect), Terminal, Emissão de cartões (Issuing) |
+| Stripe | Disponível | Pagamentos (incl. Payment Links), Produtos e Preços, Billing, Impostos, Plataforma (Connect), Capital, Terminal, Emissão de cartões (Issuing), Treasury, Stablecoins, Crypto Onramp, Fraude e Disputas (Radar), Relatórios |
 
 Mais PSPs estão planeados. Para solicitar um ou contribuir, abra uma issue ou pull request.
 
@@ -128,13 +129,19 @@ Um engagement típico passa por estas fases em ordem:
 1. **Scoping** : caso de uso, stack tecnológico, mercados, moedas, cronograma, dimensão da equipa
 2. **Requisitos dos stakeholders** : Responsável de Pagamentos, Conformidade, Fraude, Backend, Frontend, Arquitetura, Segurança, Finanças, capturados de forma conversacional e guardados como ficheiros de referência
 3. **Validação do contexto** : `/validate-context` verifica os factos específicos do PSP no escopo contra fontes oficiais e regista os elementos verificados, não verificados e bloqueados
-4. **Pagamentos principais** : Payment Intents, interface de pagamento, gestão da confirmação
+4. **Pagamentos principais** : Payment Intents, Payment Element, Payment Links, gestão da confirmação
 5. **Webhooks** : gestão de eventos, reconciliação do estado dos pedidos, retries
-6. **Fluxos de plataforma** (se aplicável) : Connect, pagamentos multi-parte
-7. **Fluxos presenciais** (se aplicável) : Terminal, gestão de leitores
-8. **Emissão de cartões** (se aplicável) : cartões emitidos, controlos de despesa, autorizações
-9. **Revisões de especialistas** : cada sub-agente carrega o seu ficheiro de requisitos, examina as decisões pertinentes e produz um resultado aprovar / sinalizar / bloquear com justificação
-10. **Artefactos do engagement** : Implementation Brief executivo, Guia de Implementação Detalhado orientado ao código e Checklist de Preparação para Go-Live por engagement
+6. **Catálogo de Produtos e Preços** (se Billing ou Impostos estiverem no escopo) : primitivas de catálogo partilhadas (`Product`, `Price`, `tax_code`, `tax_behavior`, `currency_options`), a definir uma vez antes de qualquer consumidor
+7. **Impostos** (se aplicável) : registos, cálculo automático de impostos em Invoices e Checkout, Tax IDs, reverse charge, marketplace facilitator sob Connect
+8. **Fluxos de plataforma** (se aplicável) : Connect, pagamentos multi-parte, comissões de plataforma
+9. **Capital** (se aplicável) : financiamento oferecido pela plataforma, elegibilidade, divulgações, encaminhamento de reembolsos
+10. **Fluxos presenciais** (se aplicável) : Terminal, gestão de leitores, Payment Intents presenciais
+11. **Emissão de cartões** (se aplicável) : cartões emitidos, controlos de despesa, webhooks de autorização
+12. **Treasury** (se aplicável) : contas financeiras, movimentos de dinheiro, modelo de ledger pending vs. final, emparelhamento com Issuing
+13. **Extensões de stablecoin** (se aplicável) : aceitação via Optimized Checkout, saldos stablecoin do Treasury, despesa de cartões Issuing a partir de saldo stablecoin, Open Issuance via Bridge
+14. **Crypto Onramp** (se aplicável) : compra fiat-para-cripto integrada, modos de integração e de KYC, Stripe como merchant of record
+15. **Revisões de especialistas** : cada sub-agente carrega o seu ficheiro de requisitos, examina as decisões pertinentes e produz um resultado aprovar / sinalizar / bloquear com justificação
+16. **Artefactos do engagement** : Implementation Brief executivo, Guia de Implementação Detalhado orientado ao código e Checklist de Preparação para Go-Live por engagement
 
 O Engagement Manager propõe esta sequência no início e adapta-a ao que está efetivamente no escopo da sua equipa.
 
@@ -201,10 +208,20 @@ payment-foundry/
 ├── psps/                            # Conteúdo de referência PSP, carregado em runtime
 │   └── stripe/
 │       ├── README.md                # Índice: qual ficheiro cobre o quê
-│       ├── payments.md
-│       ├── platform.md
-│       ├── terminal.md
-│       └── issuing.md
+│       ├── payments.md              # Payment Intents, Payment Element, Payment Links
+│       ├── products-and-prices.md   # Primitivas de catálogo partilhadas (Product, Price, tax_code, tax_behavior)
+│       ├── billing.md               # Subscrições, faturação, portal do cliente, dunning
+│       ├── tax.md                   # Stripe Tax: registos, impostos automáticos, Tax IDs
+│       ├── platform.md              # Connect: Standard / Express / Custom, transferências, payouts
+│       ├── capital.md               # Stripe Capital (financiamento Connect para contas ligadas)
+│       ├── terminal.md              # Presencial / point-of-sale: leitores, connection tokens
+│       ├── issuing.md               # Emissão de cartões: titulares, controlos de despesa, autorizações
+│       ├── treasury.md              # Banca integrada (contas financeiras, ACH/wires, OutboundPayments)
+│       ├── stablecoins.md           # Transversal: aceitação Optimized Checkout, saldos, Open Issuance
+│       ├── crypto-onramp.md         # Compra fiat-para-cripto integrada (Stripe como merchant of record)
+│       ├── fraud-and-disputes.md    # Radar (incl. Fraud Teams), 3DS, chargebacks
+│       ├── reports.md               # API de relatórios, Activity Report, Sigma
+│       └── testing-and-ops.md       # Modo test/live, testes de webhooks, versionamento da API
 │
 ├── context/                         # Modelos de scoping e requisitos
 │   ├── business-info.md              # Guia de scoping /start-session
