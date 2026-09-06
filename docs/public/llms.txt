@@ -1,0 +1,16 @@
+# Payment Foundry
+
+> Cross-functional alignment, not just code.
+
+## Docs
+
+- [Overview](https://cmendezs.github.io/payment-foundry/): the full README
+- [Changelog](https://cmendezs.github.io/payment-foundry/changelog/): version history
+- [Contributing](https://cmendezs.github.io/payment-foundry/contributing/): dev setup and PR checklist
+- [Security](https://cmendezs.github.io/payment-foundry/security/): vulnerability disclosure policy
+- [Code of Conduct](https://cmendezs.github.io/payment-foundry/code-of-conduct/): community standards
+- [Support](https://cmendezs.github.io/payment-foundry/support/): where to ask questions and get help
+
+## Links
+
+- [GitHub](https://github.com/cmendezs/payment-foundry)

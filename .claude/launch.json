@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "payment-foundry-docs",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--prefix", "docs", "--", "--port", "4321"],
+      "port": 4321
+    }
+  ]
+}

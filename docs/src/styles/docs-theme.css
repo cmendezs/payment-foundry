@@ -1,0 +1,51 @@
+:root {
+  --sl-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Light mode */
+  --sl-color-white: #0f172a;
+  --sl-color-gray-1: #0f172a;
+  --sl-color-gray-2: #0f172a;
+  --sl-color-gray-3: #475569;
+  --sl-color-gray-4: #64748b;
+  --sl-color-gray-5: #cbd5e1;
+  --sl-color-gray-6: #e2e8f0;
+  --sl-color-gray-7: #ffffff;
+  --sl-color-black: #f8fafc;
+  --sl-color-accent-low: #dbeafe;
+  --sl-color-accent: #1e40af;
+  --sl-color-accent-high: #1e3a8a;
+}
+
+:root[data-theme="dark"],
+:root:not([data-theme="light"]) {
+  /* Dark mode */
+  --sl-color-white: #f8fafc;
+  --sl-color-gray-1: #f8fafc;
+  --sl-color-gray-2: #f1f5f9;
+  --sl-color-gray-3: #94a3b8;
+  --sl-color-gray-4: #64748b;
+  --sl-color-gray-5: #334155;
+  --sl-color-gray-6: #1e293b;
+  --sl-color-gray-7: #0f172a;
+  --sl-color-black: #030712;
+  --sl-color-accent-low: #172554;
+  --sl-color-accent: #60a5fa;
+  --sl-color-accent-high: #bfdbfe;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sl-color-white: #f8fafc;
+    --sl-color-gray-1: #f8fafc;
+    --sl-color-gray-2: #f1f5f9;
+    --sl-color-gray-3: #94a3b8;
+    --sl-color-gray-4: #64748b;
+    --sl-color-gray-5: #334155;
+    --sl-color-gray-6: #1e293b;
+    --sl-color-gray-7: #0f172a;
+    --sl-color-black: #030712;
+    --sl-color-accent-low: #172554;
+    --sl-color-accent: #60a5fa;
+    --sl-color-accent-high: #bfdbfe;
+  }
+}
