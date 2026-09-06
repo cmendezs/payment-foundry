@@ -55,3 +55,8 @@ outputs/implementation-briefs/*.md
 
 # Claude Code (local settings, memory, session data)
 .claude/settings.local.json
+
+# Docs site (Starlight)
+docs/node_modules/
+docs/dist/
+docs/.astro/
